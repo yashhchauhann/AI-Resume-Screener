@@ -6,10 +6,19 @@ import spacy
 
 app = Flask(__name__)
 
-nlp = spacy.load("en_core_web_sm")
+# Ensure 'en_core_web_sm' model is available
+MODEL_NAME = "en_core_web_sm"
+
+try:
+    nlp = spacy.load(MODEL_NAME)
+except OSError:
+    import spacy.cli
+    spacy.cli.download(MODEL_NAME)
+    nlp = spacy.load(MODEL_NAME)
 
 # Folder for uploaded resumes
 UPLOAD_FOLDER = "resumes"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # Job description (Modify as needed)
@@ -21,9 +30,11 @@ The candidate should also be familiar with AI and Data Science concepts.
 # Function to extract text from PDF
 def extract_text_from_pdf(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
-        text = ''
+        text = ""
         for page in pdf.pages:
-            text += page.extract_text() + '\n'
+            extracted_text = page.extract_text()
+            if extracted_text:
+                text += extracted_text + "\n"
     return text
 
 # Function to extract email
@@ -92,4 +103,4 @@ def index():
     return render_template("index.html", candidates=candidates)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=True)
