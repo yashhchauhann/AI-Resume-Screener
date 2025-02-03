@@ -1,0 +1,6 @@
+Flask
+spacy
+nltk
+numpy
+pandas
+pdfplumber
